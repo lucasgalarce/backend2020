@@ -3,38 +3,8 @@ const puppeteer = require('puppeteer');
 const app = express();
 const Match = require('../models/match');
 
-
-app.get('/lastMatch', (req, res) => {
-    res.json("lastMatch")
-})
-
-app.get('/match', (req, res) => {
-    Match.find({})
-    .limit(50)
-    .exec( (err, matchs) => {
-        if (err){
-            return res.status(400).json({
-                ok: false,
-                err
-            })
-        }
-
-        res.json({
-            ok: true,
-            matchs
-        })
-    })
-})
-
-app.get('/match/:id', (req, res) => {
-    let id = req.params.id
-    res.json({
-        id
-    });
-})
-
-app.post('/match', async(req,res) => {
-
+// guardar ultimo partido con la info de la pagina
+app.post('/lastMatch', async (req, res) => {
     const browser = await puppeteer.launch({ headless: true});
     const page = await browser.newPage();
     await page.goto('https://www.lcfc.com/');
@@ -90,6 +60,65 @@ app.post('/match', async(req,res) => {
             match: matchDB
         })
     })
+})
+
+app.get('/lastMatch', (req, res) => {
+    res.json({
+        msg: 'ultimo partido'
+    })
+})
+app.get('/match', (req, res) => {
+    Match.find({})
+    .limit(50)
+    .exec( (err, matchs) => {
+        if (err){
+            return res.status(400).json({
+                ok: false,
+                err
+            })
+        }
+
+        res.json({
+            ok: true,
+            matchs
+        })
+    })
+})
+
+app.get('/match/:id', (req, res) => {
+    let id = req.params.id
+    res.json({
+        id
+    });
+})
+
+// guardar partido a mano
+app.post('/match', (req,res) => {
+    let body = req.body;
+    const fullString = `${body.localTeam} ${body.localScore} - ${body.awayScore} ${body.awayTeam}`
+
+    let match = new Match({
+        localTeam,
+        localScore,
+        awayTeam,
+        awayScore,
+        fullString
+    });
+
+    user.save((err, userDB) => {
+        if (err){
+            return res.status(400).json({
+                ok: false,
+                err
+            })
+        }
+
+        res.json({
+            ok: true,
+            user: userDB
+        })
+    })
+
 
 })
 
