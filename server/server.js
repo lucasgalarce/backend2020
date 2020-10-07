@@ -14,6 +14,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(require('./routes/match'));
+app.use(require('./routes/user'));
+
 
 mongoose.connect('mongodb://localhost:27017/Leicester', {
   useNewUrlParser: true,

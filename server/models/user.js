@@ -8,6 +8,7 @@ let userSchema = new Schema({
         required: [true, 'Email is require']
     },
     password: {
+        type: String,
         required: [true, 'Password is require']
     }
 });
