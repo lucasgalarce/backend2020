@@ -21,6 +21,9 @@ let matchSchema = new Schema({
     },
     fullString: {
         type: String,
+    },
+    date: {
+        type: String,
     }
 });
 
