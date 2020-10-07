@@ -1,10 +1,25 @@
 const express = require("express");
+const bcrypt = require('bcrypt');
 const app = express();
 const User = require('../models/user');
 
 
 app.get('/user', (req, res) => {
-    res.json("users")
+    
+    User.find({})
+            .exec( (err, users) => {
+                if (err){
+                    return res.status(400).json({
+                        ok: false,
+                        err
+                    })
+                }
+        
+                res.json({
+                    ok: true,
+                    users
+                })
+            })
 })
 
 app.get('/user/:id', (req, res) => {
@@ -19,7 +34,7 @@ app.post('/user', (req,res) => {
 
     let user = new User({
         email: body.email,
-        password: body.password
+        password: bcrypt.hashSync(body.password, 10)
     });
 
     user.save((err, userDB) => {

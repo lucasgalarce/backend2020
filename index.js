@@ -26,10 +26,12 @@ const puppeteer = require('puppeteer');
         }
 
         const localTeam = equipos[0];
-        const result = document.querySelector('.match-abridged__score').innerText;
         const awayTeam = equipos[1];
+        const result = document.querySelector('.match-abridged__score').innerText;
+        const localScore = result[0];
+        const awayScore = result[2];
 
-        const match = `${localTeam} ${result[0]} - ${result[2]} ${awayTeam}`
+        const match = `${localTeam} ${localScore} - ${awayScore} ${awayTeam}`
 
         return match
     })

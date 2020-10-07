@@ -10,6 +10,17 @@ let matchSchema = new Schema({
     localScore: {
         type: String,
         required: [true, 'Local score is necessary']
+    },
+    awayTeam: {
+        type: String,
+        required: [true, 'Away team is necessary']
+    },
+    awayScore: {
+        type: String,
+        required: [true, 'Away score is necessary']
+    },
+    fullString: {
+        type: String,
     }
 });
 
