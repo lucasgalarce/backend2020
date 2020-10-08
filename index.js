@@ -39,10 +39,20 @@ const match = require('./server/models/match');
 
         // Carga de fechas
         // Cargo la primer fecha manual porque tiene un selector distinto
-        datesArray.push(dateLastMatch)
-        for(let date of dates) {
-          datesArray.push(date.innerText)
-        }
+
+        let year = dates[0].parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.dataset.competitionMatchesList;
+        year = year.split(" ")
+        year = year[1]
+        datesArray.push(`${dateLastMatch} ${year}`)
+
+        dates.forEach((date, index) => {
+          if(index >= 49) return;
+          let year = dates[index].parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.dataset.competitionMatchesList;
+          year = year.split(" ")
+          year = year[1]
+          datesArray.push(`${date.innerText} ${year}`)
+        });
+        
         // Carga de resultados, del local y del visitante
         // Hago la carta del resultado del ultimo partido ya que no tiene el mismo selector que los demas
         localResultsArray.push(resLastMatch[0])
@@ -55,7 +65,7 @@ const match = require('./server/models/match');
         }
 
         match = []
-        // armo los objetos con los datos del partido
+        // // armo los objetos con los datos del partido
         for(let i = 0; i <= 49; i++){
           match.push({
             localTeam: localTeamsArray[i],
@@ -70,7 +80,12 @@ const match = require('./server/models/match');
         return match
     })
 
+    matchs.forEach((element, index) => {
+        element.date = new Date(element.date)
+    });
+
+    console.log(matchs)
+    console.log(matchs.length)
+
   await browser.close();
 })();
-
-

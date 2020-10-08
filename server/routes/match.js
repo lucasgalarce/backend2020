@@ -205,7 +205,11 @@ app.post('/loadmatchs', async (req, res) => {
   
     await browser.close();
     
-    // console.log(matchs)
+    //reconvierto los datos de la fecha a tipo Date para despues poder hacer ordenamiento
+    matchs.forEach(element => {
+        element.date = new Date(`${element.date} 2020`)
+    });
+
     Match.insertMany(matchs)
       .then( () => {
         return res.json({
