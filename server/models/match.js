@@ -24,6 +24,7 @@ let matchSchema = new Schema({
     },
     date: {
         type: Date,
+        required: [true, 'Date is necessary, format YYYY/MM/DD']
     }
 });
 

@@ -60,11 +60,13 @@ app.post('/match', (req,res) => {
     const fullString = `${body.localTeam} ${body.localScore} - ${body.awayScore} ${body.awayTeam}`
 
     let match = new Match({
-        localTeam,
-        localScore,
-        awayTeam,
-        awayScore,
+        localTeam: body.localTeam,
+        localScore: body.localScore,
+        awayTeam: body.awayTeam,
+        awayScore: body.awayScore,
+        date: body.date,
         fullString
+
     });
 
     match.save((err, matchDB) => {
