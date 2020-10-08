@@ -18,41 +18,98 @@ app.get('/lastMatch', (req, res) => {
     }); 
 })
 
-app.get('/match', (req, res) => {
-    Match.find({})
-    .limit(50)
-    .exec( (err, matchs) => {
-        if (err){
-            return res.status(400).json({
-                ok: false,
-                err
+app.get('/match', async (req, res) => {
+    let id = req.query.id
+    let date = req.query.date 
+    let from
+    let to
+    // let from = new Date('2020-09-27T03:00:00.000Z')
+    // console.log(from)
+    // let to = new Date('2020-09-27T03:00:00.000Z')
+    // console.log(to)
+    // let to = req.query.to
+    let match;
+    if (id || date){
+        try {
+            if (id)  match = await Match.findById(id)
+            if (date) match = await Match.findOne({date: `${date}T03:00:00.000Z`});
+            res.json({
+                match
+            })
+        } catch(err) {
+            res.json({
+                msg: 'Match not found'
+            })
+        }
+    } else if (from && to) {
+        let from = new Date('2020-09-27T03:00:00.000Z')
+        let to = new Date('2020-09-27T03:00:00.000Z')
+        try{
+            match = await Match.find({date: {$gte: from, $lte: from} })
+        } catch (err) {
+            res.json({
+                msg: 'Match not found'
             })
         }
 
-        res.json({
-            ok: true,
-            matchs
-        })
-    })
-})
+    }
+    else {
+        Match.find({})
+        .limit(50)
+        .exec( (err, matchs) => {
+            if (err){
+                return res.status(400).json({
+                    ok: false,
+                    err
+                })
+            }
+            res.json({
+                ok: true,
+                matchs
+            })
 
-app.get('/match/:id', async (req, res) => {
-    let id = req.params.id
-    let match;
-    try {
-        match = await Match.findById(id)
-    } catch(err) {
-        res.json({
-            msg: 'Match not found'
         })
     }
-
-    if(match) {
-        res.json({
-            match
-        });
-    }
+    
 })
+
+// app.get('/match/:id', async (req, res) => {
+//     let id = req.params.id
+//     let match;
+//     try {
+//         match = await Match.findById(id)
+//     } catch(err) {
+//         res.json({
+//             msg: 'Match not found'
+//         })
+//     }
+
+//     if(match) {
+//         res.json({
+//             match
+//         });
+//     }
+// })
+
+// app.get('/match', async (req, res) => {
+//     let id = req.query.id
+//     let date = req.query.date
+//     let match;
+//     try {
+//         id ? match = await Match.find({id: id}) : await Match.find({date});
+//     } catch(err) {
+//         res.json({
+//             msg: 'Match not found'
+//         })
+//     }
+
+//     if(match) {
+//         res.json({
+//             match
+//         });
+//     }
+// })
+
 
 // guardar un partido manualmente
 app.post('/match', (req,res) => {

@@ -87,10 +87,12 @@ const match = require('./server/models/match');
 
     matchs.forEach((element) => {
         element.date = new Date(element.date)
+        console.log(element.date)
+        console.log((element.date.toString()))
     });
 
-    console.log(matchs)
-    console.log(matchs.length)
+    // console.log(matchs)
+    // console.log(matchs.length)
 
   await browser.close();
 })();
