@@ -39,25 +39,16 @@ const match = require('./server/models/match');
 
         // Carga de fechas
         // Cargo la primer fecha manual porque tiene un selector distinto
-        // function nthParent(element, n) {
-        //   while(n-- && element)
-        //     element = element.parentNode;
-        //   return element;
-        // }
-        // let year = nthParent(dates[0], 7) 
         let year = dates[0].closest(".matches-list")
         year = year.dataset.competitionMatchesList
-        // let year = dates[0].parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.dataset.competitionMatchesList;
         year = year.split(" ")
         year = year[1]
         datesArray.push(`${dateLastMatch} ${year}`)
 
         dates.forEach((date, index) => {
           if(index >= 49) return;
-          // let year = nthParent(dates[index], 7) 
           let year = dates[index].closest(".matches-list")
           year = year.dataset.competitionMatchesList
-          // let year = dates[index].parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.dataset.competitionMatchesList;
           year = year.split(" ")
           year = year[1]
           datesArray.push(`${date.innerText} ${year}`)
@@ -75,7 +66,7 @@ const match = require('./server/models/match');
         }
 
         match = []
-        // // armo los objetos con los datos del partido
+        // armo los objetos con los datos del partido
         for(let i = 0; i <= 49; i++){
           match.push({
             localTeam: localTeamsArray[i],
@@ -87,15 +78,15 @@ const match = require('./server/models/match');
           })
         }
         
-        return datesArray
+        return match
     })
 
-    // matchs.forEach((element, index) => {
-    //     element.date = new Date(element.date)
-    // });
+    matchs.forEach((element, index) => {
+        element.date = new Date(element.date)
+    });
 
     console.log(matchs)
-    // console.log(matchs.length)
+    console.log(matchs.length)
 
   await browser.close();
 })();
