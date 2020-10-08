@@ -130,7 +130,6 @@ app.post('/loadmatchs', async (req, res) => {
           datesArray.push(`${dateLastMatch} ${year}`)
   
           dates.forEach((date, index) => {
-            if(index >= 49) return;
             let year = dates[index].closest(".matches-list")
             year = year.dataset.competitionMatchesList
             year = year.split(" ")
@@ -151,7 +150,7 @@ app.post('/loadmatchs', async (req, res) => {
   
           match = []
           // armo los objetos con los datos del partido
-          for(let i = 0; i <= 49; i++){
+          for(let i = 0; i <= results.length; i++){
             match.push({
               localTeam: localTeamsArray[i],
               localScore: localResultsArray[i],
