@@ -3,70 +3,21 @@ const puppeteer = require('puppeteer');
 const app = express();
 const Match = require('../models/match');
 
-// guardar ultimo partido con la info de la pagina
-app.post('/lastMatch', async (req, res) => {
-    const browser = await puppeteer.launch({ headless: true});
-    const page = await browser.newPage();
-    await page.goto('https://www.lcfc.com/');
-    // await page.screenshot({path: 'example.png'});
-    
-        const lastMatch = await page.evaluate(() => {
-            const elements = document.querySelectorAll('.match-abridged--slim-hide')
-    
-            const equipos = [];
-            for(let element of elements) {
-                equipos.push(element.innerText)
-            }
-    
-            const localTeam = equipos[0];
-            const awayTeam = equipos[1];
-            const result = document.querySelector('.match-abridged__score').innerText;
-            const localScore = result[0];
-            const awayScore = result[2];
-            const fullString = `${localTeam} ${localScore} - ${awayScore} ${awayTeam}`
-    
-            let match = {
-                localTeam,
-                localScore,
-                awayTeam,
-                awayScore,
-                fullString
-            };
-            return match
-        })
-    
-        console.log(lastMatch)
-    
-    await browser.close();
-    
-    const match = new Match({
-        localTeam: lastMatch.localTeam,
-        localScore: lastMatch.localScore,
-        awayTeam: lastMatch.awayTeam,
-        awayScore: lastMatch.awayScore,
-        fullString: lastMatch.fullString
-    })
-
-    match.save((err, matchDB) => {
-        if (err){
-            return res.status(400).json({
+app.get('/lastMatch', (req, res) => {
+    Match.find().sort('-date').limit(1).exec(function(err, match) {
+        if(err){
+            return res.json({
                 ok: false,
                 err
             })
         }
 
-        res.json({
-            ok: true,
-            match: matchDB
+        return res.json({
+            match
         })
-    })
+    }); 
 })
 
-app.get('/lastMatch', (req, res) => {
-    res.json({
-        msg: 'ultimo partido'
-    })
-})
 app.get('/match', (req, res) => {
     Match.find({})
     .limit(50)
@@ -103,7 +54,7 @@ app.get('/match/:id', async (req, res) => {
     }
 })
 
-// guardar partido a mano
+// guardar un partido manualmente
 app.post('/match', (req,res) => {
     let body = req.body;
     const fullString = `${body.localTeam} ${body.localScore} - ${body.awayScore} ${body.awayTeam}`
@@ -172,10 +123,21 @@ app.post('/loadmatchs', async (req, res) => {
   
           // Carga de fechas
           // Cargo la primer fecha manual porque tiene un selector distinto
-          datesArray.push(dateLastMatch)
-          for(let date of dates) {
-            datesArray.push(date.innerText)
-          }
+          let year = dates[0].closest(".matches-list")
+          year = year.dataset.competitionMatchesList
+          year = year.split(" ")
+          year = year[1]
+          datesArray.push(`${dateLastMatch} ${year}`)
+  
+          dates.forEach((date, index) => {
+            if(index >= 49) return;
+            let year = dates[index].closest(".matches-list")
+            year = year.dataset.competitionMatchesList
+            year = year.split(" ")
+            year = year[1]
+            datesArray.push(`${date.innerText} ${year}`)
+          });
+  
           // Carga de resultados, del local y del visitante
           // Hago la carta del resultado del ultimo partido ya que no tiene el mismo selector que los demas
           localResultsArray.push(resLastMatch[0])
@@ -206,8 +168,8 @@ app.post('/loadmatchs', async (req, res) => {
     await browser.close();
     
     //reconvierto los datos de la fecha a tipo Date para despues poder hacer ordenamiento
-    matchs.forEach(element => {
-        element.date = new Date(`${element.date} 2020`)
+    matchs.forEach((element) => {
+        element.date = new Date(element.date)
     });
 
     Match.insertMany(matchs)

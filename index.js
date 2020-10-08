@@ -43,7 +43,9 @@ const match = require('./server/models/match');
         year = year.dataset.competitionMatchesList
         year = year.split(" ")
         year = year[1]
-        datesArray.push(`${dateLastMatch} ${year}`)
+        let dateFormated = dateLastMatch.split(" ")
+        dateFormated = `${year}/${dateFormated[2]}/${dateFormated[1]}`
+        datesArray.push(dateFormated)
 
         dates.forEach((date, index) => {
           if(index >= 49) return;
@@ -51,7 +53,9 @@ const match = require('./server/models/match');
           year = year.dataset.competitionMatchesList
           year = year.split(" ")
           year = year[1]
-          datesArray.push(`${date.innerText} ${year}`)
+          let dateFormated = date.innerText.split(" ")
+          dateFormated = `${year}/${dateFormated[2]}/${dateFormated[1]}`
+          datesArray.push(dateFormated)
         });
 
         // Carga de resultados, del local y del visitante
@@ -81,7 +85,7 @@ const match = require('./server/models/match');
         return match
     })
 
-    matchs.forEach((element, index) => {
+    matchs.forEach((element) => {
         element.date = new Date(element.date)
     });
 
