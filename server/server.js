@@ -13,11 +13,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
-app.use(require('./routes/match'));
-app.use(require('./routes/user'));
+// Configuración global de rutas
+app.use(require('./routes/index'));
 
 
-mongoose.connect('mongodb://localhost:27017/Leicester', {
+mongoose.connect(process.env.URLDB, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useFindAndModify: false,

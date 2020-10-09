@@ -2,8 +2,9 @@ const express = require("express");
 const puppeteer = require('puppeteer');
 const app = express();
 const Match = require('../models/match');
+const { verificaToken } = require('../middlewares/autentication');
 
-app.get('/lastMatch', (req, res) => {
+app.get('/lastMatch', verificaToken, (req, res) => {
     Match.find().sort('-date').limit(1).exec(function(err, match) {
         if(err){
             return res.json({
@@ -22,7 +23,7 @@ app.get('/lastMatch', (req, res) => {
 // Si tiene el parametro id, busca por id
 // Si tiene el parametro date, busca por esa fecha especifica
 // Si tiene los parametros from y to, busca en el rango de esas fechas. El formato de la fecha es YYYY/MM/DD
-app.get('/match', async (req, res) => {
+app.get('/match', verificaToken, async (req, res) => {
     let id = req.query.id
     let date = req.query.date 
     let from = req.query.from 
@@ -77,7 +78,7 @@ app.get('/match', async (req, res) => {
 })
 
 // Calcula los puntos del Leicester en un rango de fechas
-app.get('/score', async (req, res) => {
+app.get('/score', verificaToken, async (req, res) => {
     let from = req.query.from 
     let to = req.query.to 
     let score = 0
@@ -121,7 +122,7 @@ app.get('/score', async (req, res) => {
 })
 
 // guardar un partido manualmente
-app.post('/match', (req,res) => {
+app.post('/match', verificaToken, (req,res) => {
     let body = req.body;
     const fullString = `${body.localTeam} ${body.localScore} - ${body.awayScore} ${body.awayTeam}`
 
@@ -153,7 +154,7 @@ app.post('/match', (req,res) => {
 })
 
 // Guardar los ultimos 50 partidos
-app.post('/loadmatches', async (req, res) => {
+app.post('/loadmatches', verificaToken, async (req, res) => {
     const browser = await puppeteer.launch({ headless: true});
     const page = await browser.newPage();
     await page.goto('https://www.lcfc.com/matches/results');

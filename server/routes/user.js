@@ -1,13 +1,15 @@
 const express = require("express");
+
 const bcrypt = require('bcrypt');
-const app = express();
 const User = require('../models/user');
+const { verificaToken } = require('../middlewares/autentication');
 
 
-app.get('/user', (req, res) => {
+const app = express();
+
+app.get('/user', verificaToken, (req, res) => {
     
-    User.find({})
-            .exec( (err, users) => {
+    User.find({}).exec( (err, users) => {
                 if (err){
                     return res.status(400).json({
                         ok: false,
