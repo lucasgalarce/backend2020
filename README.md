@@ -36,8 +36,8 @@ GET /match
 * Obtetener partido por id, se le pasa id por query parameter
 GET /match?id=
 
-* Obtener partido por fecha
+* Obtener partido por fecha, se le pasa fecha por query parameter
 GET /match?date=2020-10-04
 
-* Obtener partidos por un rango de fecha
+* Obtener partidos por un rango de fecha, se le pasa por query parameters 'from' y 'to'
 GET /match?from=2020-09-05&to=2020-10-04
