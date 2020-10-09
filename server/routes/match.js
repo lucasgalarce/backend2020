@@ -42,13 +42,13 @@ app.get('/match', async (req, res) => {
             })
         }
     } else if (from && to) {
-        console.log('test')
         from = new Date(`${from}T03:00:00.000Z`)
         to = new Date(`${to}T03:00:00.000Z`)
         try{
-            match = await Match.find({date: {$gte: from, $lte: to} })
+            matches = await Match.find({date: {$gte: from, $lte: to} })
             res.json({
-                match
+                numberOfMatches: matches.length,
+                matches
             })
         } catch (err) {
             res.json({
@@ -87,7 +87,6 @@ app.get('/score', async (req, res) => {
         to = new Date(`${to}T03:00:00.000Z`)
         try{
             matches = await Match.find({date: {$gte: from, $lte: to} })
-            console.log(matches)
             matches.forEach(element => {
                 if(element.localTeam == 'Leicester') {
                     if(element.localScore > element.awayScore) {
@@ -105,6 +104,7 @@ app.get('/score', async (req, res) => {
             });
 
             res.json({
+                numberOfMatches: matches.length,
                 score,
                 matches
             })
