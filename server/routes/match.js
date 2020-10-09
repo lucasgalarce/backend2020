@@ -18,16 +18,16 @@ app.get('/lastMatch', (req, res) => {
     }); 
 })
 
+// Get de partidos, si no trae query parameters trae los ultimos 50 partidos
+// Si tiene el parametro id, busca por id
+// Si tiene el parametro date, busca por esa fecha especifica
+// Si tiene los parametros from y to, busca en el rango de esas fechas. El formato de la fecha es YYYY/MM/DD
 app.get('/match', async (req, res) => {
     let id = req.query.id
     let date = req.query.date 
-    let from
-    let to
-    // let from = new Date('2020-09-27T03:00:00.000Z')
-    // console.log(from)
-    // let to = new Date('2020-09-27T03:00:00.000Z')
-    // console.log(to)
-    // let to = req.query.to
+    let from = req.query.from 
+    let to = req.query.to 
+
     let match;
     if (id || date){
         try {
@@ -42,21 +42,24 @@ app.get('/match', async (req, res) => {
             })
         }
     } else if (from && to) {
-        let from = new Date('2020-09-27T03:00:00.000Z')
-        let to = new Date('2020-09-27T03:00:00.000Z')
+        console.log('test')
+        from = new Date(`${from}T03:00:00.000Z`)
+        to = new Date(`${to}T03:00:00.000Z`)
         try{
-            match = await Match.find({date: {$gte: from, $lte: from} })
+            match = await Match.find({date: {$gte: from, $lte: to} })
+            res.json({
+                match
+            })
         } catch (err) {
             res.json({
                 msg: 'Match not found'
             })
         }
-
     }
     else {
         Match.find({})
         .limit(50)
-        .exec( (err, matchs) => {
+        .exec( (err, matches) => {
             if (err){
                 return res.status(400).json({
                     ok: false,
@@ -65,7 +68,7 @@ app.get('/match', async (req, res) => {
             }
             res.json({
                 ok: true,
-                matchs
+                matches
             })
 
         })
@@ -73,43 +76,49 @@ app.get('/match', async (req, res) => {
     
 })
 
-// app.get('/match/:id', async (req, res) => {
-//     let id = req.params.id
-//     let match;
-//     try {
-//         match = await Match.findById(id)
-//     } catch(err) {
-//         res.json({
-//             msg: 'Match not found'
-//         })
-//     }
+// Calcula los puntos del Leicester en un rango de fechas
+app.get('/score', async (req, res) => {
+    let from = req.query.from 
+    let to = req.query.to 
+    let score = 0
 
-//     if(match) {
-//         res.json({
-//             match
-//         });
-//     }
-// })
+    if (from && to) {
+        from = new Date(`${from}T03:00:00.000Z`)
+        to = new Date(`${to}T03:00:00.000Z`)
+        try{
+            matches = await Match.find({date: {$gte: from, $lte: to} })
+            console.log(matches)
+            matches.forEach(element => {
+                if(element.localTeam == 'Leicester') {
+                    if(element.localScore > element.awayScore) {
+                        score += 3
+                    }
+                } else {
+                    if(element.awayScore > element.localScore) {
+                        score += 3
+                    }
+                }
+                if(element.awayScore == element.localScore) {
+                    score += 1
+                }
 
-// app.get('/match', async (req, res) => {
-//     let id = req.query.id
-//     let date = req.query.date
-//     let match;
-//     try {
-//         id ? match = await Match.find({id: id}) : await Match.find({date});
-//     } catch(err) {
-//         res.json({
-//             msg: 'Match not found'
-//         })
-//     }
+            });
 
-//     if(match) {
-//         res.json({
-//             match
-//         });
-//     }
-// })
-
+            res.json({
+                score,
+                matches
+            })
+        } catch (err) {
+            res.json({
+                msg: 'Match not found'
+            })
+        }
+    } else {
+        return res.json({
+            err: 'From and to required'
+        })
+    }
+})
 
 // guardar un partido manualmente
 app.post('/match', (req,res) => {
@@ -144,7 +153,7 @@ app.post('/match', (req,res) => {
 })
 
 // Guardar los ultimos 50 partidos
-app.post('/loadmatchs', async (req, res) => {
+app.post('/loadmatches', async (req, res) => {
     const browser = await puppeteer.launch({ headless: true});
     const page = await browser.newPage();
     await page.goto('https://www.lcfc.com/matches/results');
@@ -152,7 +161,7 @@ app.post('/loadmatchs', async (req, res) => {
     await page.waitForSelector('.match-item__match-container')
     await page.waitForSelector('.highlighted-match__detail')
     
-      const matchs = await page.evaluate(() => {
+      const matches = await page.evaluate(() => {
           const teams = document.querySelectorAll('.match-item__team-container')
           const dates = document.querySelectorAll('.match-item__date')
           const results = document.querySelectorAll('.match-item__match-detail')
@@ -226,15 +235,15 @@ app.post('/loadmatchs', async (req, res) => {
     await browser.close();
     
     //reconvierto los datos de la fecha a tipo Date para despues poder hacer ordenamiento
-    matchs.forEach((element) => {
+    matches.forEach((element) => {
         element.date = new Date(element.date)
     });
 
-    Match.insertMany(matchs)
+    Match.insertMany(matches)
       .then( () => {
         return res.json({
             ok: true,
-            msg: 'Matchs added'
+            msg: 'Matches added'
         })
       }).catch( (err) => {
           res.json({
