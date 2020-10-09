@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 // Configuración global de rutas
 app.use(require('./routes/index'));
 
-
+// Conexión db
 mongoose.connect(process.env.URLDB, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -25,9 +25,9 @@ mongoose.connect(process.env.URLDB, {
 }, (err, res) => {
     if(err) throw err;
 
-    console.log("base de datos online");
+    console.log("DB online");
 });
 
 app.listen(PORT, () => {
-    console.log(`Escuchando el puerto ${PORT}`)
+    console.log(`Listening port ${PORT}`)
 })

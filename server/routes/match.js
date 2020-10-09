@@ -14,12 +14,13 @@ app.get('/lastMatch', verificaToken, (req, res) => {
         }
 
         return res.json({
+            ok: true,
             match
         })
     }); 
 })
 
-// Get de partidos, si no trae query parameters trae los ultimos 50 partidos
+// Get de partidos, si no trae query parameters(id, date, o from y to) trae los ultimos 50 partidos
 // Si tiene el parametro id, busca por id
 // Si tiene el parametro date, busca por esa fecha especifica
 // Si tiene los parametros from y to, busca en el rango de esas fechas. El formato de la fecha es YYYY/MM/DD
@@ -35,11 +36,13 @@ app.get('/match', verificaToken, async (req, res) => {
             if (id)  match = await Match.findById(id)
             if (date) match = await Match.findOne({date: `${date}T03:00:00.000Z`});
             res.json({
+                ok: true,
                 match
             })
         } catch(err) {
-            res.json({
-                msg: 'Match not found'
+            res.status(400).json({
+                msg: 'Match not found',
+                err
             })
         }
     } else if (from && to) {
@@ -48,12 +51,14 @@ app.get('/match', verificaToken, async (req, res) => {
         try{
             matches = await Match.find({date: {$gte: from, $lte: to} })
             res.json({
+                ok: true,
                 numberOfMatches: matches.length,
                 matches
             })
         } catch (err) {
-            res.json({
-                msg: 'Match not found'
+            res.status(400).json({
+                msg: 'Match not found',
+                err
             })
         }
     }
@@ -84,11 +89,13 @@ app.get('/score', verificaToken, async (req, res) => {
     let score = 0
 
     if (from && to) {
+        // Convierto el valor ingreso a una fecha valida en la db
         from = new Date(`${from}T03:00:00.000Z`)
         to = new Date(`${to}T03:00:00.000Z`)
         try{
             matches = await Match.find({date: {$gte: from, $lte: to} })
             matches.forEach(element => {
+                // Verifico si el leicester es el equipo local o visitante, y hago el calculo de puntos
                 if(element.localTeam == 'Leicester') {
                     if(element.localScore > element.awayScore) {
                         score += 3
@@ -105,13 +112,16 @@ app.get('/score', verificaToken, async (req, res) => {
             });
 
             res.json({
+                ok: true,
                 numberOfMatches: matches.length,
                 score,
                 matches
             })
         } catch (err) {
             res.json({
-                msg: 'Match not found'
+                ok: false,
+                msg: 'Match not found',
+                err
             })
         }
     } else {
@@ -133,7 +143,6 @@ app.post('/match', verificaToken, (req,res) => {
         awayScore: body.awayScore,
         date: body.date,
         fullString
-
     });
 
     match.save((err, matchDB) => {
@@ -158,17 +167,18 @@ app.post('/loadmatches', verificaToken, async (req, res) => {
     const browser = await puppeteer.launch({ headless: true});
     const page = await browser.newPage();
     await page.goto('https://www.lcfc.com/matches/results');
-  
+    //Espero que estos selectores esten cargados
     await page.waitForSelector('.match-item__match-container')
     await page.waitForSelector('.highlighted-match__detail')
-    
+    // Evaluo la pagina
       const matches = await page.evaluate(() => {
+          // Obtengo los elementos que me sirven
           const teams = document.querySelectorAll('.match-item__team-container')
           const dates = document.querySelectorAll('.match-item__date')
           const results = document.querySelectorAll('.match-item__match-detail')
           const resLastMatch = document.querySelector('.highlighted-match__detail').innerText
           const dateLastMatch = document.querySelector('.highlighted-match__date').innerText
-  
+
           const datesArray = [];
           const teamsArray = [];
           const localTeamsArray = [];
@@ -235,11 +245,12 @@ app.post('/loadmatches', verificaToken, async (req, res) => {
   
     await browser.close();
     
-    //reconvierto los datos de la fecha a tipo Date para despues poder hacer ordenamiento
+    // Reconvierto los datos de la fecha a tipo Date para despues poder hacer ordenamiento
     matches.forEach((element) => {
         element.date = new Date(element.date)
     });
 
+    // Inserto todos los partidos en la db
     Match.insertMany(matches)
       .then( () => {
         return res.json({
